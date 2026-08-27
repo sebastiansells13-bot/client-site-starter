@@ -1,0 +1,128 @@
+media:
+  input: src/_includes/img
+  output: /img
+
+content:
+  - name: posts
+    label: Blog Posts
+    type: collection
+    path: src/posts
+    view:
+      fields: [title, date, tags]
+      sort: [date, title]
+      default:
+        sort: date
+        order: desc
+    fields:
+      - name: title
+        label: Title
+        type: string
+        required: true
+        description: The main headline for the post. Keep it concise and descriptive.
+
+      - name: description
+        label: Description
+        type: string
+        required: true
+        description: A short summary for SEO and social sharing. Max 160 characters.
+        options:
+          maxlength: 160
+
+      - name: date
+        label: Date
+        type: date
+        required: true
+        description: Publication date.
+        options:
+          format: yyyy-MM-dd
+          time: false
+
+      - name: tags
+        label: Tags
+        type: select
+        default: news
+        description: Categorize the post.
+        options:
+          values: [news, announcement, event]
+          creatable: true
+
+      - name: layout
+        label: Layout
+        type: string
+        hidden: true
+        default: layouts/post.njk
+
+      - name: image
+        label: Cover Image
+        type: image
+        description: Main image for the post. Used as the hero image and for social sharing.
+        options:
+          path: blog
+
+      - name: body
+        label: Body
+        type: rich-text
+        description: Post content.
+
+  - name: services
+    label: Services
+    type: file
+    path: src/_data/services.json
+    fields:
+      - name: list
+        label: Services
+        type: object
+        list:
+          collapsible:
+            summary: "{fields.title}"
+        fields:
+          - name: title
+            label: Service Name
+            type: string
+            required: true
+
+          - name: description
+            label: Description
+            type: rich-text
+            required: true
+            description: What this service is and who it's for (1–3 sentences).
+
+          - name: icon
+            label: Icon Image
+            type: image
+            description: Optional small icon or photo representing this service.
+            options:
+              path: services
+
+  - name: team
+    label: Team Members
+    type: file
+    path: src/_data/team.json
+    fields:
+      - name: list
+        label: Team Members
+        type: object
+        list:
+          collapsible:
+            summary: "{fields.name}"
+        fields:
+          - name: name
+            label: Full Name
+            type: string
+            required: true
+
+          - name: role
+            label: Role / Title
+            type: string
+            required: true
+
+          - name: photo
+            label: Photo
+            type: image
+            options:
+              path: team
+
+          - name: bio
+            label: Bio
+            type: rich-text
+            description: A brief biography (2–4 sentences).

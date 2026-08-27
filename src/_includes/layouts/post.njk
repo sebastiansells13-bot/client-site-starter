@@ -1,0 +1,11 @@
+---
+layout: layouts/base.njk
+---
+<article class="wrapper post">
+  <h1>{{ title }}</h1>
+  <time datetime="{{ date | htmlDateString }}">{{ date | readableDate }}</time>
+  {% if image %}<img src="{{ image }}" alt="">{% endif %}
+  <div class="post-body">
+    {{ content | safe }}
+  </div>
+</article>

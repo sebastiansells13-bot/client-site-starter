@@ -1,0 +1,17 @@
+---
+layout: layouts/page.njk
+title: Services
+permalink: /services/
+---
+<div class="wrapper">
+  <h1>Services</h1>
+</div>
+<section class="services-grid wrapper">
+  {% for service in services.list %}
+  <div class="service-card">
+    {% if service.icon %}<img src="{{ service.icon }}" alt="">{% endif %}
+    <h3>{{ service.title }}</h3>
+    <p>{{ service.description | safe }}</p>
+  </div>
+  {% endfor %}
+</section>

@@ -1,0 +1,33 @@
+---
+layout: layouts/page.njk
+title: Contact
+permalink: /contact/
+---
+<div class="wrapper">
+  <h1>Contact</h1>
+</div>
+<dl class="contact-details wrapper">
+  {% if business.phone %}
+  <dt>Phone</dt>
+  <dd><a href="tel:{{ business.phone }}">{{ business.phone }}</a></dd>
+  {% endif %}
+  {% if business.email %}
+  <dt>Email</dt>
+  <dd><a href="mailto:{{ business.email }}">{{ business.email }}</a></dd>
+  {% endif %}
+  {% if business.address %}
+  <dt>Address</dt>
+  <dd>{{ business.address }}</dd>
+  {% endif %}
+</dl>
+
+<!--
+  Swap this comment for a real form once you've picked a backend
+  (Netlify Forms, Formspree, etc.) per METHODOLOGY.md.
+  <form name="contact" method="POST" data-netlify="true">
+    <input type="text" name="name" placeholder="Name" required>
+    <input type="email" name="email" placeholder="Email" required>
+    <textarea name="message" placeholder="Message" required></textarea>
+    <button type="submit">Send</button>
+  </form>
+-->

@@ -1,0 +1,9 @@
+<footer class="site-footer">
+  <div class="wrapper">
+    <span>&copy; {% year %} {{ business.name or metadata.title }}</span>
+    <span>
+      {% if business.email %}<a href="mailto:{{ business.email }}">{{ business.email }}</a>{% endif %}
+      {% if business.phone %} · {{ business.phone }}{% endif %}
+    </span>
+  </div>
+</footer>

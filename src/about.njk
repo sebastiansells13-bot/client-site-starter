@@ -1,0 +1,23 @@
+---
+layout: layouts/page.njk
+title: About
+permalink: /about/
+---
+<div class="wrapper">
+  <h1>About {{ business.name }}</h1>
+  <p>{{ business.tagline }}</p>
+
+  {% if team.list.length %}
+  <h2>Team</h2>
+  <div class="services-grid">
+    {% for member in team.list %}
+    <div class="service-card">
+      {% if member.photo %}<img src="{{ member.photo }}" alt="{{ member.name }}">{% endif %}
+      <h3>{{ member.name }}</h3>
+      <p><em>{{ member.role }}</em></p>
+      <p>{{ member.bio | safe }}</p>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>

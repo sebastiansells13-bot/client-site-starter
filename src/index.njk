@@ -1,0 +1,20 @@
+---
+layout: layouts/page.njk
+title: Home
+eleventyNavigation:
+  key: Home
+  order: 1
+---
+<div class="hero wrapper">
+  <h1>{{ business.name }}</h1>
+  <p>{{ business.tagline }}</p>
+</div>
+
+<section class="services-grid wrapper">
+  {% for service in services.list %}
+  <div class="service-card">
+    <h3>{{ service.title }}</h3>
+    <p>{{ service.description }}</p>
+  </div>
+  {% endfor %}
+</section>

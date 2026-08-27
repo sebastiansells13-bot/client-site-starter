@@ -1,0 +1,12 @@
+{
+  "list": [
+    {
+      "title": "Service One",
+      "description": "Describe the first service and who it's for."
+    },
+    {
+      "title": "Service Two",
+      "description": "Describe the second service and who it's for."
+    }
+  ]
+}

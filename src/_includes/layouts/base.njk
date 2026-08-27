@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="{{ metadata.language }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% if title %}{{ title }} · {% endif %}{{ business.name or metadata.title }}</title>
+  <meta name="description" content="{{ description or business.tagline or metadata.description }}">
+  <link rel="stylesheet" href="{{ assetPaths.stylesheet }}">
+  {% if collections %}<link rel="alternate" href="/feed.xml" type="application/atom+xml" title="{{ business.name }}">{% endif %}
+</head>
+<body>
+  {% include "components/header.njk" %}
+  <main>
+    {{ content | safe }}
+  </main>
+  {% include "components/footer.njk" %}
+</body>
+</html>
