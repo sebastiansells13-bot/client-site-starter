@@ -20,9 +20,9 @@
   },
   "license": "UNLICENSED",
   "devDependencies": {
-    "@11ty/eleventy": "^3.1.2",
+    "@11ty/eleventy": "^3.1.7",
     "@11ty/eleventy-navigation": "^1.0.5",
-    "@11ty/eleventy-plugin-rss": "^3.0.0",
+    "@11ty/eleventy-plugin-rss": "^3.1.0",
     "@axe-core/playwright": "4.12.1",
     "@playwright/test": "1.62.1",
     "@quasibit/eleventy-plugin-sitemap": "^2.2.0",
@@ -31,8 +31,8 @@
     "markdown-it": "^14.1.0",
     "markdown-it-anchor": "^9.2.0",
     "rimraf": "^6.0.1",
-    "sass": "^1.81.0",
-    "sharp": "^0.33.5"
+    "sass": "^1.106.1",
+    "sharp": "^0.35.5"
   },
   "engines": {
     "node": ">=24"
