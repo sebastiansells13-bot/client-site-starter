@@ -23,10 +23,14 @@ map directly to `src/_data/business.json` and the triage table in `METHODOLOGY.m
 
 - [ ] Static content only
 - [ ] Contact form
+- If a form: should submissions just arrive by email, or be saved somewhere (sign-up
+  list, waitlist, entries) and get an automatic reply?
+- [ ] Appointment booking (calendar to check, video or in-person meetings)
 - [ ] Blog the client will post to regularly
 - [ ] Events / RSVP
 - [ ] Selling products, tickets, or bookings
 - If selling something: one simple product, or an ongoing catalog/repeat commerce?
+- [ ] Spanish (or another language) version of the site
 
 ## Content ownership
 
