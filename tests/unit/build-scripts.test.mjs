@@ -39,9 +39,19 @@ async function fakeSite(files, packageName = "client-site-starter") {
 const png = (width, height) =>
   sharp({ create: { width, height, channels: 3, background: "#c33" } }).png().toBuffer();
 
+// CI sets these for the whole job; clear them so each test controls its own.
+const BUILD_ENV_DEFAULTS = {
+  ELEVENTY_PATH_PREFIX: "",
+  EXPECT_FINGERPRINTED_MEDIA: "",
+  MEDIA_ALLOW_LOCAL: "",
+};
+
 async function runScript(name, cwd, env = {}, args = []) {
   try {
-    const { stdout } = await run("node", [path.join(scripts, name), ...args], { cwd, env: { ...process.env, ...env } });
+    const { stdout } = await run("node", [path.join(scripts, name), ...args], {
+      cwd,
+      env: { ...process.env, ...BUILD_ENV_DEFAULTS, ...env },
+    });
     return { code: 0, output: stdout };
   } catch (error) {
     return { code: error.code, output: `${error.stdout}${error.stderr}` };
