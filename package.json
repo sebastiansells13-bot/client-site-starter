@@ -13,7 +13,7 @@
     "clean": "rimraf dev docs",
     "clean:artifacts": "npm run clean && rimraf test-results playwright-report .cache/media",
     "sass": "sass --style=compressed --no-source-map --quiet-deps src/_includes/css/index.scss src/_includes/css/index.css",
-    "test": "node --test tests/unit/",
+    "test": "node --test \"tests/unit/*.test.mjs\"",
     "test:browser": "playwright test",
     "watch:eleventy": "cross-env ELEVENTY_ENV=development eleventy --serve",
     "watch:sass": "npm run sass -- --watch"
