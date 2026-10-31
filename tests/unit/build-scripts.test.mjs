@@ -93,6 +93,29 @@ test("optimize-media fingerprints referenced media and drops the rest", async ()
   }
 });
 
+test("optimize-media keeps icon and social preview images in their original format", async () => {
+  const root = await fakeSite({
+    "docs/index.html": page(
+      '<h1>x</h1><img src="/img/hero.png">',
+      '<meta property="og:image" content="https://acme.test/img/hero.png">' +
+        '<link rel="apple-touch-icon" href="/img/icon.png">'
+    ),
+    "docs/img/hero.png": await png(400, 300),
+    "docs/img/icon.png": await png(180, 180),
+  });
+  try {
+    const result = await runScript("optimize-media.mjs", root, { MEDIA_ALLOW_LOCAL: "1" });
+    assert.equal(result.code, 0, result.output);
+    const html = await readFile(path.join(root, "docs/index.html"), "utf8");
+    assert.match(html, /content="https:\/\/acme\.test\/assets\/img\/hero\.[a-f0-9]{12}\.png"/);
+    assert.match(html, /<img src="\/assets\/img\/hero\.[a-f0-9]{12}\.png"/, "same file stays one format");
+    assert.match(html, /href="\/assets\/img\/icon\.[a-f0-9]{12}\.png"/);
+    assert.doesNotMatch(html, /\.webp/);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
 test("optimize-media refuses to run outside GitHub Actions by default", async () => {
   const root = await fakeSite({ "docs/index.html": page("<h1>x</h1>") });
   try {

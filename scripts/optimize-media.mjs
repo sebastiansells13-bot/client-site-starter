@@ -2,7 +2,10 @@
 // Post-build media optimization for CI. Runs after `npm run build` has copied
 // original media into docs/img/:
 //
-//   - JPG/PNG referenced by the site become WebP when that is smaller.
+//   - JPG/PNG referenced by the site become WebP when that is smaller, except
+//     images used by icon links or og:image/twitter:image tags, which keep
+//     their format (iOS home-screen icons must be PNG, and several link
+//     preview crawlers don't render WebP). They're still fingerprinted.
 //   - MP4/MOV/WebM referenced by the site become VP9/Opus WebM (needs FFmpeg).
 //   - GIF/SVG/WebP/AVIF are kept as-is.
 //   - Every referenced file is written to /assets/img/ with a content hash in
@@ -43,6 +46,8 @@ const CONVERT_TO_WEBP = /\.(jpe?g|png)$/i;
 const VIDEO = /\.(mp4|mov|m4v|webm)$/i;
 const KEEP = /\.(gif|svg|webp|avif|ico|pdf)$/i;
 const REWRITABLE = /\.(html|css|xml|json|webmanifest|txt)$/i;
+const KEEP_FORMAT_TAG =
+  /<(?:link\b[^>]*\brel="[^"]*icon[^"]*"|meta\b[^>]*\b(?:property|name)="(?:og:image(?::url|:secure_url)?|twitter:image)")[^>]*>/gi;
 
 // Matches the site's path prefix (see eleventy.config.cjs), e.g. "/" or "/client-site-starter/".
 const pathPrefix = normalizePrefix(process.env.ELEVENTY_PATH_PREFIX);
@@ -84,12 +89,12 @@ const sha = (buffer) => createHash("sha256").update(buffer).digest("hex");
 
 // Produce the optimized version of one raw file, using the cache when possible.
 // Returns the path of a file whose bytes should be published, and its extension.
-async function optimize(rawPath) {
+async function optimize(rawPath, { keepFormat = false } = {}) {
   const source = await readFile(rawPath);
   const ext = path.extname(rawPath).toLowerCase();
   const key = sha(Buffer.concat([source, Buffer.from(SETTINGS)])).slice(0, 24);
 
-  if (KEEP.test(rawPath)) return { file: rawPath, ext };
+  if (KEEP.test(rawPath) || (keepFormat && CONVERT_TO_WEBP.test(rawPath))) return { file: rawPath, ext };
 
   if (CONVERT_TO_WEBP.test(rawPath)) {
     const cached = path.join(CACHE_DIR, `${key}.webp`);
@@ -133,6 +138,9 @@ async function main() {
 
   await mkdir(CACHE_DIR, { recursive: true });
 
+  // Every icon link and social-image tag in the site, for keepFormat checks.
+  const keepFormatTags = [...texts.values()].flatMap((text) => text.match(KEEP_FORMAT_TAG) || []).join("\n");
+
   // Map each referenced raw URL ("/img/team/a.jpg") to its fingerprinted URL.
   const replacements = new Map();
   let skipped = 0;
@@ -146,7 +154,8 @@ async function main() {
       continue;
     }
 
-    const { file, ext } = await optimize(rawPath);
+    const keepFormat = keepFormatTags.includes(rawUrl) || keepFormatTags.includes(encodeURI(rawUrl));
+    const { file, ext } = await optimize(rawPath, { keepFormat });
     const hash = sha(await readFile(file)).slice(0, 12);
     const base = relative.slice(0, -path.extname(relative).length);
     const assetRelative = `${ASSET_PREFIX}${base}.${hash}${ext}`;
