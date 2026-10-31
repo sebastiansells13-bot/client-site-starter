@@ -16,6 +16,7 @@ generalized for repeat client work rather than one specific site.
 | `AGENTS.md` | Instructions for AI coding assistants working in a cloned repo |
 | `CONTRIBUTING.md` | Dev conventions, including how to spin up a new client repo from this one |
 | `CMS-GUIDE.md` | Client-facing walkthrough for editing content via Pages CMS |
+| `REFERENCES.md` | Which aindaco1 repos to read for forms, commerce, booking, testing, and shared code |
 | `.pages.yml` | Pages CMS content model (posts, services, team) |
 | `src/_data/business.json` | Client name, tagline, contact info — fill from the worksheet |
 | `.github/workflows/build-deploy.yml` | CI: build, optimize images, deploy to GitHub Pages |
