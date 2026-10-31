@@ -57,7 +57,8 @@ before handoff.
 ## 6. Deploy pipeline
 
 `.github/workflows/build-deploy.yml` — push to `main` → install → build → optimize
-media → deploy to GitHub Pages → optionally purge Cloudflare cache. Written once here,
+media → publish guard + browser checks → deploy to GitHub Pages → optionally purge
+Cloudflare cache. Pull requests run everything up to the checks without deploying. Written once here,
 reused per client repo with minor config changes.
 
 ## 7. Launch check
@@ -67,12 +68,12 @@ Before telling the client a site or change is live:
 - The **Build and Deploy** run for that commit succeeded (a successful push alone
   doesn't mean the live site changed)
 - The live URL shows the change over HTTPS on the custom domain
-- Pages pass a phone-width check (no sideways scrolling at 320–390px) and an
-  accessibility scan (axe or Lighthouse) with no WCAG AA violations
 - Contact forms deliver a real test submission
 
-This template doesn't automate these checks yet. `body-and-blood-landing` shows how:
-a Playwright + axe test file and a publish guard script, run by `npm test` in CI.
+CI already blocks a deploy if any page fails the publish guard (missing title,
+description or `<h1>`, broken local links, oversized files, starter placeholders left
+in) or the browser checks (WCAG 2.2 AA via axe, sideways scrolling from 320px to
+1920px, script errors). Run `npm test` locally to see the same results before pushing.
 
 ## 8. Scaling past one-off sites
 

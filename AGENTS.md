@@ -28,6 +28,15 @@ published, which data file owns which copy, wording that must stay verbatim. -->
   original, unoptimized media into `docs/`)
 - **CI build**: `npm run build:ci` (GitHub Actions only — runs `npm run build`, then
   optimizes referenced images with `scripts/optimize-media.mjs`)
+- **Test**: `npm test` (production build, then `check:publish`, then `test:browser`).
+  First run needs `npx playwright install chromium`. Stop `npm start` first: tests
+  serve `docs/` on port 8181.
+- **Publish guard**: `npm run check:publish` (`scripts/check-publish.mjs`; checks an
+  existing `docs/` build for page titles, descriptions, one `<h1>` per page, broken local
+  links, file/CSS size budgets, and leftover starter placeholders in client repos)
+- **Browser checks**: `npm run test:browser` (`tests/site.spec.js`; every sitemap page
+  plus 404: axe WCAG 2.2 AA, no sideways scrolling at 320–1920px, no script errors or
+  broken local requests). Put client-specific tests in their own files under `tests/`.
 
 ## Architecture
 
@@ -73,8 +82,9 @@ published, which data file owns which copy, wording that must stay verbatim. -->
 
 ## Verifying a change
 
-- Code, template, or content changes: `npm run build`, then check the affected pages in
-  `npm start` at phone and desktop widths.
+- Code, template, or content changes: `npm test`, then look at the affected pages in
+  `npm start` at phone and desktop widths. Fix failures in `src/`; don't loosen a check
+  or raise a budget without saying why in the commit.
 - Documentation-only changes: check relative links and run `git diff --check`; no site
   build is needed.
 - After a merge to `main`, check that the Build and Deploy run succeeded and the live
