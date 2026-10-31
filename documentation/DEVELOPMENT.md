@@ -82,7 +82,10 @@ ELEVENTY_PATH_PREFIX=/client-site-starter/ npm run test:browser
 (`MEDIA_ALLOW_LOCAL=1` overrides that for debugging the script itself). After the
 production build it:
 
-- converts referenced JPG and PNG files to WebP when that's smaller;
+- converts referenced JPG and PNG files to WebP when that's smaller, except images
+  used by icon links or `og:image`/`twitter:image` tags, which keep their format
+  (iOS home-screen icons must be PNG, and several link-preview crawlers don't render
+  WebP);
 - transcodes referenced MP4, MOV, M4V and WebM files to VP9/Opus WebM with FFmpeg,
   which the workflow installs only when the site has video;
 - writes every referenced file under `/assets/img/` with a content hash in its name,
