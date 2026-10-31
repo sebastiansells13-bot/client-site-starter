@@ -19,7 +19,9 @@ generalized for repeat client work rather than one specific site.
 | `REFERENCES.md` | Which aindaco1 repos to read for forms, commerce, booking, testing, and shared code |
 | `.pages.yml` | Pages CMS content model (posts, services, team) |
 | `src/_data/business.json` | Client name, tagline, contact info — fill from the worksheet |
-| `.github/workflows/build-deploy.yml` | CI: build, optimize images, deploy to GitHub Pages |
+| `.github/workflows/build-deploy.yml` | CI: build, optimize images, run checks, deploy to GitHub Pages |
+| `scripts/check-publish.mjs` | Publish guard: page basics, broken links, size budgets, leftover placeholders |
+| `tests/site.spec.js` | Browser checks on every page: accessibility, mobile layout, errors |
 
 ## Quick start
 
@@ -29,6 +31,12 @@ npm start
 ```
 
 Visit http://localhost:8080/.
+
+To run the same checks CI runs (first time: `npx playwright install chromium`):
+
+```bash
+npm test
+```
 
 ## Using this as a new client site
 

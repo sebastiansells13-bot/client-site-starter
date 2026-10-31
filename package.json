@@ -8,16 +8,21 @@
     "start": "node scripts/start.js",
     "build": "npm run clean && npm run sass && cross-env ELEVENTY_ENV=production eleventy",
     "build:ci": "npm run build && node scripts/optimize-media.mjs",
-    "clean": "rimraf dev docs",
+    "check:publish": "node scripts/check-publish.mjs",
+    "clean": "rimraf dev docs test-results playwright-report",
     "sass": "sass --style=compressed --no-source-map --quiet-deps src/_includes/css/index.scss src/_includes/css/index.css",
     "watch:eleventy": "cross-env ELEVENTY_ENV=development eleventy --serve",
-    "watch:sass": "npm run sass -- --watch"
+    "watch:sass": "npm run sass -- --watch",
+    "test": "npm run build && npm run check:publish && npm run test:browser",
+    "test:browser": "playwright test"
   },
   "license": "UNLICENSED",
   "devDependencies": {
     "@11ty/eleventy": "^3.1.2",
     "@11ty/eleventy-navigation": "^1.0.5",
     "@11ty/eleventy-plugin-rss": "^3.0.0",
+    "@axe-core/playwright": "4.12.1",
+    "@playwright/test": "1.62.1",
     "@quasibit/eleventy-plugin-sitemap": "^2.2.0",
     "cross-env": "^10.1.0",
     "luxon": "^3.5.0",

@@ -35,6 +35,25 @@ jobs:
       - name: Build site
         run: npm run build:ci
 
+      # Checks run against the optimized output that will actually deploy;
+      # a failure here stops the deploy job.
+      - name: Publish guard
+        run: npm run check:publish
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Browser checks (accessibility, mobile layout, errors)
+        run: npm run test:browser
+
+      - name: Upload test report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-results
+          path: test-results/
+          retention-days: 7
+
       - name: Upload GitHub Pages artifact
         if: github.event_name != 'pull_request'
         uses: actions/upload-pages-artifact@v3

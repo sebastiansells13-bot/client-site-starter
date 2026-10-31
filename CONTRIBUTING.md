@@ -16,10 +16,10 @@ Conventions for developers (human or AI) working in this repo.
 
 ## Before opening a PR
 
-- `npm run build` locally and confirm it completes without errors
+- `npm test` locally and confirm the build, publish guard, and browser checks pass
+  (the same checks run in CI and block the deploy)
 - Check that any new page is reachable from navigation (or intentionally isn't)
 - Check that any client-editable content was added to `.pages.yml`, not hardcoded
-- Check new pages at phone width (320–390px) for sideways scrolling
 
 ## Documentation changes
 
