@@ -6,15 +6,17 @@
   "type": "module",
   "scripts": {
     "start": "node scripts/start.js",
-    "build": "npm run clean && npm run sass && cross-env ELEVENTY_ENV=production eleventy",
-    "build:ci": "npm run build && node scripts/optimize-media.mjs",
+    "build": "npm run clean && npm run sass && cross-env ELEVENTY_ENV=production eleventy && npm run check:publish",
+    "build:ci": "node scripts/optimize-media.mjs --check && npm run build && node scripts/optimize-media.mjs && cross-env EXPECT_FINGERPRINTED_MEDIA=true npm run check:publish",
+    "check": "npm test && npm run build && npm run test:browser",
     "check:publish": "node scripts/check-publish.mjs",
-    "clean": "rimraf dev docs test-results playwright-report",
+    "clean": "rimraf dev docs",
+    "clean:artifacts": "npm run clean && rimraf test-results playwright-report .cache/media",
     "sass": "sass --style=compressed --no-source-map --quiet-deps src/_includes/css/index.scss src/_includes/css/index.css",
+    "test": "node --test tests/unit/",
+    "test:browser": "playwright test",
     "watch:eleventy": "cross-env ELEVENTY_ENV=development eleventy --serve",
-    "watch:sass": "npm run sass -- --watch",
-    "test": "npm run build && npm run check:publish && npm run test:browser",
-    "test:browser": "playwright test"
+    "watch:sass": "npm run sass -- --watch"
   },
   "license": "UNLICENSED",
   "devDependencies": {
@@ -31,5 +33,8 @@
     "rimraf": "^6.0.1",
     "sass": "^1.81.0",
     "sharp": "^0.33.5"
+  },
+  "engines": {
+    "node": ">=24"
   }
 }

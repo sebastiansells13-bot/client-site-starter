@@ -1,6 +1,18 @@
+# Edits made through the CMS are committed as the signed-in user, with a message
+# that sets them apart from developer commits in the history and Actions runs.
+settings:
+  commit:
+    identity: user
+    templates:
+      update: "content: update site via Pages CMS"
+
+# Originals stay full quality in src/; CI makes web-sized, fingerprinted copies.
+# `rename: safe` turns uploads like "My Photo (1).JPG" into URL-safe names.
 media:
   input: src/_includes/img
   output: /img
+  extensions: [jpg, jpeg, png, webp, gif, svg, avif, mp4, mov, webm]
+  rename: safe
 
 content:
   - name: posts

@@ -8,6 +8,10 @@
 //
 // Budgets can be raised per site with env vars if a client genuinely needs it:
 //   CSS_BUDGET_KB (gzip, default 30), FILE_BUDGET_MB (any single file, default 5)
+//
+// In CI, EXPECT_FINGERPRINTED_MEDIA=true also requires that optimize-media.mjs
+// moved every referenced image/video to a content-hashed /assets/img/ URL.
+// ELEVENTY_PATH_PREFIX must match the build's prefix (see eleventy.config.cjs).
 import { readdir, readFile, stat } from "node:fs/promises";
 import { gzipSync } from "node:zlib";
 import path from "node:path";
@@ -15,6 +19,13 @@ import path from "node:path";
 const OUTPUT_DIR = "docs";
 const CSS_BUDGET_KB = Number(process.env.CSS_BUDGET_KB || 30);
 const FILE_BUDGET_MB = Number(process.env.FILE_BUDGET_MB || 5);
+const EXPECT_FINGERPRINTED_MEDIA = process.env.EXPECT_FINGERPRINTED_MEDIA === "true";
+const PATH_PREFIX = normalizePrefix(process.env.ELEVENTY_PATH_PREFIX);
+
+function normalizePrefix(value = "/") {
+  const trimmed = value.replace(/^\/+|\/+$/g, "");
+  return trimmed ? `/${trimmed}/` : "/";
+}
 
 const failures = [];
 const fail = (message) => failures.push(message);
@@ -37,7 +48,9 @@ async function exists(filePath) {
 // Resolve a root-relative URL ("/about/", "/assets/css/x.css?v=1#top") to the
 // file GitHub Pages would serve for it.
 async function resolveLocal(url) {
-  const pathname = decodeURI(url.split(/[?#]/)[0]);
+  let pathname = decodeURI(url.split(/[?#]/)[0]);
+  if (!pathname.startsWith(PATH_PREFIX)) return false;
+  pathname = `/${pathname.slice(PATH_PREFIX.length)}`;
   const target = path.join(OUTPUT_DIR, pathname);
   if (pathname.endsWith("/")) return exists(path.join(target, "index.html"));
   return (await exists(target)) || exists(path.join(target, "index.html"));
@@ -64,6 +77,9 @@ async function checkLocalReferences(file, html) {
   const refs = [...html.matchAll(/\s(?:href|src)="(\/(?!\/)[^"]*)"/gi)].map((m) => m[1]);
   for (const ref of new Set(refs)) {
     if (!(await resolveLocal(ref))) fail(`${page}: broken local link or asset ${ref}`);
+    if (EXPECT_FINGERPRINTED_MEDIA && ref.startsWith(`${PATH_PREFIX}img/`)) {
+      fail(`${page}: ${ref} wasn't fingerprinted by optimize-media.mjs`);
+    }
   }
 }
 
@@ -115,6 +131,10 @@ async function main() {
         fail(`${path.relative(OUTPUT_DIR, file)} is ${gzipKb.toFixed(1)} KB gzipped (budget ${CSS_BUDGET_KB} KB)`);
       }
     }
+  }
+
+  if (EXPECT_FINGERPRINTED_MEDIA && (await exists(path.join(OUTPUT_DIR, "img")))) {
+    fail("docs/img/ still exists — optimize-media.mjs should have replaced it with docs/assets/img/");
   }
 
   await checkPlaceholders();

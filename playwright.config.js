@@ -3,9 +3,11 @@
 import { defineConfig, devices } from "@playwright/test";
 
 const PORT = 8181;
+const PREFIX = `/${(process.env.ELEVENTY_PATH_PREFIX || "/").replace(/^\/+|\/+$/g, "")}/`.replace("//", "/");
 
 export default defineConfig({
   testDir: "tests",
+  testMatch: "**/*.spec.js",
   fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 1 : 0,
@@ -17,8 +19,8 @@ export default defineConfig({
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
   webServer: {
     command: "node scripts/serve-test-site.mjs",
-    url: `http://127.0.0.1:${PORT}/`,
-    env: { PORT: String(PORT) },
+    url: `http://127.0.0.1:${PORT}${PREFIX}`,
+    env: { PORT: String(PORT), ELEVENTY_PATH_PREFIX: PREFIX },
     reuseExistingServer: !process.env.CI,
   },
 });

@@ -4,7 +4,7 @@ How a submitted intake worksheet turns into a deployed client site, from this te
 
 ## 1. Worksheet → intake fields
 
-`INTAKE-WORKSHEET.md` is the canonical form. It captures exactly what decides the
+[INTAKE-WORKSHEET.md](INTAKE-WORKSHEET.md) is the canonical form. It captures exactly what decides the
 template tier and populates the first-pass content:
 
 - Business name, one-line description, 3–5 example sites they like
@@ -32,14 +32,12 @@ the heaviest stack. [REFERENCES.md](REFERENCES.md) maps each row to a working ex
 
 ## 3. Repo standup (per project)
 
-1. Use this repo as a GitHub template → new repo named for the client
-2. Set `CNAME`, the sitemap `hostname` in `eleventy.config.cjs`, the site title and
-   description in `src/_data/metadata.json`, and the `package.json` name
-3. Wire GitHub Pages (Settings → Pages → GitHub Actions) and, if applicable, Cloudflare
-4. Fill `src/_data/business.json` from the worksheet answers
-5. Update `AGENTS.md`/`CONTRIBUTING.md` for anything specific to this client, including
-   its non-negotiables (content that must never be published, which data file owns
-   which copy)
+Follow "Adding a new client site from this template" in
+[CONTRIBUTING.md](../CONTRIBUTING.md#adding-a-new-client-site-from-this-template). In
+short: generate the repo from the template, set the domain and site data from the
+worksheet, switch Pages to GitHub Actions, and record the client's non-negotiables
+(content that must never be published, which data file owns which copy) in `AGENTS.md`.
+The build refuses to pass while the starter's placeholders are still in place.
 
 ## 4. Build phase
 
@@ -51,29 +49,32 @@ step works for free instead of requiring a rebuild.
 
 If the client is self-editing: point them to Pages CMS
 (`pagescms.org/edit/<org>/<repo>`), signed in with their own GitHub account, editing
-structured content types with no code exposure. Write `CMS-GUIDE.md` in plain language
+structured content types with no code exposure. Adapt [CMS-GUIDE.md](CMS-GUIDE.md) in plain language
 before handoff.
 
 ## 6. Deploy pipeline
 
-`.github/workflows/build-deploy.yml` — push to `main` → install → build → optimize
-media → publish guard + browser checks → deploy to GitHub Pages → optionally purge
-Cloudflare cache. Pull requests run everything up to the checks without deploying. Written once here,
-reused per client repo with minor config changes.
+[build-deploy.yml](../.github/workflows/build-deploy.yml) — push to `main` → offline
+tests → build → optimize and fingerprint media → publish guard + browser checks →
+deploy to GitHub Pages → (Cloudflare only) sync cache rules and purge → verify the live
+site serves the new build. Pull requests run everything up to the checks without
+deploying. Written once here, reused per client repo without changes; see
+[DEVELOPMENT.md](DEVELOPMENT.md#deployment).
 
 ## 7. Launch check
 
 Before telling the client a site or change is live:
 
-- The **Build and Deploy** run for that commit succeeded (a successful push alone
-  doesn't mean the live site changed)
+- The **Build and Deploy** run for that commit succeeded, including its final
+  **Verify the live site serves this build** step
 - The live URL shows the change over HTTPS on the custom domain
 - Contact forms deliver a real test submission
 
 CI already blocks a deploy if any page fails the publish guard (missing title,
 description or `<h1>`, broken local links, oversized files, starter placeholders left
 in) or the browser checks (WCAG 2.2 AA via axe, sideways scrolling from 320px to
-1920px, script errors). Run `npm test` locally to see the same results before pushing.
+1920px, script errors). Run `npm run check` locally to see the same results before
+pushing; [TESTING.md](TESTING.md) covers what each check does and what isn't automated.
 
 ## 8. Scaling past one-off sites
 

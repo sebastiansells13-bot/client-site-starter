@@ -5,11 +5,16 @@ import { readFileSync } from "node:fs";
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 
+// Matches the build's ELEVENTY_PATH_PREFIX ("/" on a custom domain).
+const PREFIX = `/${(process.env.ELEVENTY_PATH_PREFIX || "/").replace(/^\/+|\/+$/g, "")}/`.replace("//", "/");
+const withPrefix = (pathname) =>
+  pathname.startsWith(PREFIX) ? pathname : `${PREFIX}${pathname.replace(/^\//, "")}`;
+
 const sitemap = readFileSync("docs/sitemap.xml", "utf8");
 const pages = [
   ...[...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => new URL(m[1]).pathname),
   "/404.html",
-];
+].map(withPrefix);
 
 // Small phone → large desktop.
 const WIDTHS = [320, 375, 390, 768, 1024, 1440, 1920];

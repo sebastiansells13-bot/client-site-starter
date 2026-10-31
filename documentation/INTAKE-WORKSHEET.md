@@ -1,7 +1,7 @@
 # Client intake worksheet
 
 Send this to a prospective client, or fill it in together on a kickoff call. Answers
-map directly to `src/_data/business.json` and the triage table in `METHODOLOGY.md`.
+map directly to `src/_data/business.json` and the triage table in [METHODOLOGY.md](METHODOLOGY.md).
 
 ## Business basics
 
