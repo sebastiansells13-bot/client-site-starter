@@ -6,9 +6,17 @@ const pluginNavigation = require("@11ty/eleventy-navigation");
 const markdownIt = require("markdown-it");
 const markdownItAnchor = require("markdown-it-anchor");
 const sitemap = require("@quasibit/eleventy-plugin-sitemap");
+const { HtmlBasePlugin } = require("@11ty/eleventy");
+const { imageSize } = require("./lib/image-size.cjs");
 
 const isProduction = process.env.ELEVENTY_ENV === "production";
 const outputDirectory = isProduction ? "docs" : "dev";
+
+// Sites on a custom domain (the normal case) are served from "/". GitHub
+// Pages project sites without one are served from "/<repo>/"; the workflow
+// sets ELEVENTY_PATH_PREFIX for that case and HtmlBasePlugin rewrites
+// root-relative URLs in the HTML, so templates can keep using "/about/".
+const pathPrefix = process.env.ELEVENTY_PATH_PREFIX || "/";
 
 // Content-address an asset so production caching can be immutable and
 // far-future without ever serving a stale file after a deploy.
@@ -25,6 +33,7 @@ const assetPaths = {
 };
 
 module.exports = function (eleventyConfig) {
+  eleventyConfig.addPlugin(HtmlBasePlugin);
   eleventyConfig.addPlugin(pluginRss);
   eleventyConfig.addPlugin(pluginNavigation);
   eleventyConfig.addPlugin(sitemap, {
@@ -87,11 +96,14 @@ module.exports = function (eleventyConfig) {
   });
   eleventyConfig.setLibrary("md", markdownLibrary);
 
+  // `<img src="{{ src }}" {% imageSize src %}>` → width/height attributes.
+  eleventyConfig.addAsyncShortcode("imageSize", (src) => imageSize(src));
+
   eleventyConfig.addShortcode("year", () => `${new Date().getFullYear()}`);
 
   return {
     templateFormats: ["md", "njk", "html", "liquid"],
-    pathPrefix: "/",
+    pathPrefix,
     markdownTemplateEngine: "njk",
     htmlTemplateEngine: "njk",
     dataTemplateEngine: "njk",

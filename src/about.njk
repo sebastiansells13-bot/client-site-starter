@@ -12,7 +12,7 @@ permalink: /about/
   <div class="services-grid">
     {% for member in team.list %}
     <div class="service-card">
-      {% if member.photo %}<img src="{{ member.photo }}" alt="{{ member.name }}">{% endif %}
+      {% if member.photo %}<img src="{{ member.photo }}" alt="{{ member.name }}" {% imageSize member.photo %} loading="lazy" decoding="async">{% endif %}
       <h3>{{ member.name }}</h3>
       <p><em>{{ member.role }}</em></p>
       <p>{{ member.bio | safe }}</p>

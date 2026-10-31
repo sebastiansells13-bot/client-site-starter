@@ -15,29 +15,85 @@ concurrency:
 permissions:
   contents: read
 
+# Actions are pinned to full commit SHAs (tag in the trailing comment);
+# Dependabot opens PRs to bump them.
 jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    outputs:
+      path_prefix: ${{ steps.prefix.outputs.path_prefix }}
+      stylesheet: ${{ steps.stylesheet.outputs.path }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: "22"
+          node-version-file: .nvmrc
           cache: npm
+
+      # A site with a custom domain in CNAME is served from "/". Without one,
+      # GitHub Pages serves it from "/<repo>/" (like the starter's own demo).
+      - name: Choose path prefix
+        id: prefix
+        run: |
+          if [ -s CNAME ]; then prefix="/"; else prefix="/${GITHUB_REPOSITORY#*/}/"; fi
+          echo "path_prefix=$prefix" >> "$GITHUB_OUTPUT"
+          echo "ELEVENTY_PATH_PREFIX=$prefix" >> "$GITHUB_ENV"
+          echo "Path prefix: $prefix"
 
       - name: Install dependencies
         run: npm ci
 
+      - name: Offline tests
+        run: npm test
+
+      - name: Restore optimized media cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .cache/media
+          key: media-v1-${{ runner.os }}-${{ hashFiles('src/_includes/img/**/*') }}
+          restore-keys: |
+            media-v1-${{ runner.os }}-
+
+      - name: Install FFmpeg (only if the site has video)
+        run: |
+          if find src/_includes/img -type f \( -iname '*.mp4' -o -iname '*.mov' -o -iname '*.m4v' -o -iname '*.webm' \) | grep -q .; then
+            sudo apt-get update
+            sudo apt-get install --yes ffmpeg
+          fi
+
+      # build:ci = media tool check → build → optimize media → publish guard
+      # (with fingerprinted-media checks). A failure here stops the deploy.
       - name: Build site
         run: npm run build:ci
 
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Browser checks (accessibility, mobile layout, errors)
+        run: npm run test:browser
+
+      - name: Upload test results on failure
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: playwright-results
+          path: test-results/
+          retention-days: 7
+
+      - name: Record built stylesheet path
+        id: stylesheet
+        run: |
+          path=$(grep -o 'href="[^"]*/assets/css/index\.[a-f0-9]\{12\}\.css"' docs/index.html | head -1 | sed 's/^href="//; s/"$//')
+          test -n "$path"
+          echo "path=$path" >> "$GITHUB_OUTPUT"
+
       - name: Upload GitHub Pages artifact
         if: github.event_name != 'pull_request'
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
           path: ./docs
 
@@ -45,6 +101,7 @@ jobs:
     if: github.event_name != 'pull_request'
     needs: build
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       contents: read
       pages: write
@@ -55,11 +112,26 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
 
-      # Optional: only runs if this client site sits behind Cloudflare and
-      # CLOUDFLARE_ENABLED is set to "true" as a repository variable, with
-      # CLOUDFLARE_API_TOKEN and CLOUDFLARE_ZONE set as repository secrets.
+      - name: Checkout deployment scripts
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+
+      # Optional: only when the site sits behind Cloudflare. Set the repository
+      # variable CLOUDFLARE_ENABLED to "true" and the secrets CLOUDFLARE_ZONE and
+      # CLOUDFLARE_API_TOKEN (Cache Rules: Edit + Cache Purge on that zone).
+      - name: Sync immutable asset cache rules
+        if: vars.CLOUDFLARE_ENABLED == 'true'
+        run: node scripts/sync-cloudflare-cache-rules.mjs
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ZONE: ${{ secrets.CLOUDFLARE_ZONE }}
+
       - name: Purge Cloudflare cache
         if: vars.CLOUDFLARE_ENABLED == 'true'
         run: |
@@ -70,3 +142,10 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ZONE: ${{ secrets.CLOUDFLARE_ZONE }}
+
+      - name: Verify the live site serves this build
+        run: node scripts/verify-deploy.mjs
+        env:
+          SITE_URL: ${{ steps.deployment.outputs.page_url }}
+          EXPECTED_STYLESHEET: ${{ needs.build.outputs.stylesheet }}
+          CLOUDFLARE_ENABLED: ${{ vars.CLOUDFLARE_ENABLED }}

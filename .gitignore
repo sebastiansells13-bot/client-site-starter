@@ -5,3 +5,5 @@ docs/
 .DS_Store
 *.log
 src/_includes/css/index.css
+test-results/
+playwright-report/
